@@ -1,18 +1,30 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // Cambia a useNavigate
 import BacheList from '../components/BacheList';
 import ReparacionForm from '../components/ReparacionForm';
 import ReparacionList from '../components/ReparacionList';
 
 const AdminDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate(); // Usa useNavigate para redirigir
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
+  const goToHome = () => {
+    navigate('/'); // Cambia la ruta a la página de inicio según sea necesario
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8 font-poppins">
       <h1 className="text-3xl font-bold mb-8">Panel de Administración de Baches</h1>
-      <div className="mb-12">
+      <div className="mb-12 flex space-x-4">
+        <button
+          onClick={goToHome}
+          className="bg-gray-600 text-white py-2 px-4 rounded shadow hover:bg-gray-700 transition duration-300"
+        >
+          Volver a Inicio
+        </button>
         <button
           onClick={openModal}
           className="bg-blue-600 text-white py-2 px-4 rounded shadow hover:bg-blue-700 transition duration-300"
