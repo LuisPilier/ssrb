@@ -10,10 +10,10 @@ function App() {
     <Router>
       <div className="font-poppins">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Comparativa/>} />
           <Route path="/informador" element={<Informador />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/comparativa" element={<Comparativa />} />
+          <Route path="/home" element={<Home/>} />
         </Routes>
       </div>
     </Router>
