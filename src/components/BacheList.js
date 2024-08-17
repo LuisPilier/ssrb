@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import supabase from '../supabaseClient';
-import Swal from 'sweetalert2';
+import React, { useEffect, useState } from "react";
+import supabase from "../supabaseClient";
+import Swal from "sweetalert2";
 
 const BacheList = () => {
   const [baches, setBaches] = useState([]);
@@ -8,21 +8,19 @@ const BacheList = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [formData, setFormData] = useState({
-    tamaño: '',
-    posición: '',
-    prioridad: ''
+    tamaño: "",
+    posición: "",
+    prioridad: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [bachesPerPage] = useState(10);
 
   useEffect(() => {
     const fetchBaches = async () => {
-      const { data, error } = await supabase
-        .from('baches')
-        .select('*');
+      const { data, error } = await supabase.from("baches").select("*");
 
       if (error) {
-        console.error('Error fetching baches:', error);
+        console.error("Error fetching baches:", error);
       } else {
         setBaches(data);
       }
@@ -36,7 +34,7 @@ const BacheList = () => {
     setFormData({
       tamaño: bache.tamaño,
       posición: bache.posición,
-      prioridad: bache.prioridad
+      prioridad: bache.prioridad,
     });
     setIsUpdateModalOpen(true);
   };
@@ -59,16 +57,16 @@ const BacheList = () => {
 
   const updateBache = async () => {
     try {
-      console.log('Datos del formulario:', formData);
-      
+      console.log("Datos del formulario:", formData);
+
       const { error } = await supabase
-        .from('baches')
+        .from("baches")
         .update({
           tamaño: formData.tamaño,
           posición: formData.posición,
-          prioridad: formData.prioridad
+          prioridad: formData.prioridad,
         })
-        .eq('id', selectedBache.id);
+        .eq("id", selectedBache.id);
 
       if (error) {
         throw new Error(error.message);
@@ -76,22 +74,27 @@ const BacheList = () => {
         setBaches(
           baches.map((bache) =>
             bache.id === selectedBache.id
-              ? { ...bache, tamaño: formData.tamaño, posición: formData.posición, prioridad: formData.prioridad }
+              ? {
+                  ...bache,
+                  tamaño: formData.tamaño,
+                  posición: formData.posición,
+                  prioridad: formData.prioridad,
+                }
               : bache
           )
         );
         Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Bache actualizado correctamente!',
+          icon: "success",
+          title: "Éxito",
+          text: "Bache actualizado correctamente!",
         });
         closeModals();
       }
     } catch (err) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al actualizar el bache: ' + err.message,
+        icon: "error",
+        title: "Error",
+        text: "Error al actualizar el bache: " + err.message,
       });
     }
   };
@@ -99,26 +102,26 @@ const BacheList = () => {
   const deleteBache = async () => {
     try {
       const { error } = await supabase
-        .from('baches')
+        .from("baches")
         .delete()
-        .eq('id', selectedBache.id);
+        .eq("id", selectedBache.id);
 
       if (error) {
         throw new Error(error.message);
       } else {
         setBaches(baches.filter((bache) => bache.id !== selectedBache.id));
         Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Bache eliminado correctamente!',
+          icon: "success",
+          title: "Éxito",
+          text: "Bache eliminado correctamente!",
         });
         closeModals();
       }
     } catch (err) {
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Error al eliminar el bache: ' + err.message,
+        icon: "error",
+        title: "Error",
+        text: "Error al eliminar el bache: " + err.message,
       });
     }
   };
@@ -133,7 +136,9 @@ const BacheList = () => {
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-md font-poppins">
-      <h2 className="text-3xl font-semibold mb-6 text-gray-800">Lista de Baches</h2>
+      <h2 className="text-3xl font-semibold mb-6 text-gray-800">
+        Lista de Baches
+      </h2>
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
@@ -144,13 +149,17 @@ const BacheList = () => {
               <th className="py-3 px-6 text-left">Posición</th>
               <th className="py-3 px-6 text-left">Distrito</th>
               <th className="py-3 px-6 text-left">Prioridad</th>
-              
             </tr>
           </thead>
           <tbody className="text-gray-700 text-sm font-light">
             {currentBaches.map((bache) => (
-              <tr key={bache.id} className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left whitespace-nowrap">{bache.id}</td>
+              <tr
+                key={bache.id}
+                className="border-b border-gray-200 hover:bg-gray-100"
+              >
+                <td className="py-3 px-6 text-left whitespace-nowrap">
+                  {bache.id}
+                </td>
                 <td className="py-3 px-6 text-left">{bache.calle}</td>
                 <td className="py-3 px-6 text-left">{bache.tamaño}</td>
                 <td className="py-3 px-6 text-left">{bache.posición}</td>
@@ -158,11 +167,11 @@ const BacheList = () => {
                 <td className="py-3 px-6 text-left">
                   <span
                     className={`text-xs font-semibold inline-block py-1 px-2 rounded text-white ${
-                        bache.prioridad <= 4
-                        ? 'bg-red-500'
-                        : bache.prioridad <= 7
-                        ? 'bg-yellow-500'
-                        : 'bg-green-500'
+                      bache.prioridad >= 9
+                        ? "bg-red-500"
+                        : bache.prioridad >= 6
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
                     }`}
                   >
                     {bache.prioridad}
@@ -176,17 +185,20 @@ const BacheList = () => {
 
       {/* Pagination */}
       <div className="flex justify-center mt-4">
-        {Array.from({ length: Math.ceil(baches.length / bachesPerPage) }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => paginate(i + 1)}
-            className={`mx-1 px-3 py-1 rounded ${
-              currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+        {Array.from(
+          { length: Math.ceil(baches.length / bachesPerPage) },
+          (_, i) => (
+            <button
+              key={i}
+              onClick={() => paginate(i + 1)}
+              className={`mx-1 px-3 py-1 rounded ${
+                currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-200"
+              }`}
+            >
+              {i + 1}
+            </button>
+          )
+        )}
       </div>
 
       {/* Update Modal */}
@@ -269,7 +281,10 @@ const BacheList = () => {
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-xl font-semibold mb-4">Eliminar Bache</h3>
-            <p>¿Estás seguro de que deseas eliminar el bache con ID {selectedBache.id}?</p>
+            <p>
+              ¿Estás seguro de que deseas eliminar el bache con ID{" "}
+              {selectedBache.id}?
+            </p>
             <div className="flex justify-end mt-4">
               <button
                 onClick={deleteBache}
