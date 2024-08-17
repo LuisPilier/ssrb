@@ -26,6 +26,8 @@ const ReparacionList = () => {
     material_relleno: "",
     coste: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   useEffect(() => {
     const fetchReparaciones = async () => {
@@ -39,8 +41,6 @@ const ReparacionList = () => {
 
     fetchReparaciones();
 
-    // Suscribirse a cambios en la tabla 'reparaciones'
-
     const subscription = supabase
       .channel("custom-all-channel")
       .on(
@@ -52,11 +52,21 @@ const ReparacionList = () => {
       )
       .subscribe();
 
-    // Limpiar la suscripción cuando el componente se desmonte
     return () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  // Obtener reparaciones actuales
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentReparaciones = reparaciones.slice(
+    indexOfFirstItem,
+    indexOfLastItem
+  );
+
+  // Cambiar página
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   const handleUpdate = (reparacion) => {
     setSelectedReparacion(reparacion);
@@ -91,18 +101,13 @@ const ReparacionList = () => {
 
   const updateReparacion = async () => {
     try {
-      // Asegúrate de que `formData.coste` sea una cadena antes de llamar a `replace`
       const costeString = String(formData.coste || "");
-
-      // Convierte el coste a número decimal, manejando comas si las hay
       const costeNumerico = parseFloat(costeString.replace(/,/g, ""));
 
-      // Verifica si el valor convertido es un número válido
       if (isNaN(costeNumerico)) {
         throw new Error("El coste no es un número válido");
       }
 
-      // Ejecuta la actualización
       const { data, error } = await supabase
         .from("reparaciones")
         .update({
@@ -113,18 +118,17 @@ const ReparacionList = () => {
           horas_empleadas: parseInt(formData.horas_empleadas, 10),
           estado: formData.estado,
           material_relleno: formData.material_relleno,
-          coste: costeNumerico, // Envía el valor numérico para el campo NUMERIC
+          coste: costeNumerico,
         })
         .eq("id", selectedReparacion.id)
-        .select(); // Asegúrate de usar select() si deseas obtener datos de la actualización
+        .select();
 
       if (error) throw new Error(error.message);
 
-      // Actualiza el estado con los datos recuperados
       setReparaciones(
         reparaciones.map((reparacion) =>
           reparacion.id === selectedReparacion.id
-            ? { ...reparacion, ...data[0] } // Actualiza con los nuevos datos
+            ? { ...reparacion, ...data[0] }
             : reparacion
         )
       );
@@ -181,68 +185,104 @@ const ReparacionList = () => {
       {reparaciones.length === 0 ? (
         <p className="text-gray-600">No hay reparaciones disponibles.</p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {reparaciones.map((reparacion) => (
-            <div
-              key={reparacion.id}
-              className="bg-white border border-gray-300 rounded-lg shadow-sm p-5 transition-transform transform hover:scale-105"
-            >
-              <h3 className="text-xl font-semibold mb-2 text-gray-700">
-                Número de Bache: {reparacion.bache_id}
-              </h3>
-              <p>
-                <strong>Brigada:</strong> {reparacion.brigada}
-              </p>
-              <p>
-                <strong>Trabajadores:</strong> {reparacion.trabajadores}
-              </p>
-              <p>
-                <strong>Equipamiento:</strong> {reparacion.equipamiento}
-              </p>
-              <p>
-                <strong>Horas Empleadas:</strong> {reparacion.horas_empleadas}
-              </p>
-              <p>
-                <strong>Estado:</strong>
-                <span
-                  className={`ml-2 px-2 py-1 text-xs font-semibold rounded text-white ${
-                    reparacion.estado === "Obra en curso"
-                      ? "bg-yellow-500"
-                      : reparacion.estado === "Reparación temporal"
-                      ? "bg-orange-500"
-                      : reparacion.estado === "No reparado"
-                      ? "bg-red-500"
-                      : reparacion.estado === "Reparado"
-                      ? "bg-green-500"
-                      : "bg-gray-500"
+        <>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white border border-gray-200">
+              <thead>
+                <tr className="bg-blue-500 text-white uppercase text-sm leading-normal">
+                  <th className="py-3 px-6 text-left">ID Bache</th>
+                  <th className="py-3 px-6 text-left">Brigada</th>
+                  <th className="py-3 px-6 text-left">Trabajadores</th>
+                  <th className="py-3 px-6 text-left">Equipamiento</th>
+                  <th className="py-3 px-6 text-left">Horas Empleadas</th>
+                  <th className="py-3 px-6 text-left">Estado</th>
+                  <th className="py-3 px-6 text-left">Material Relleno</th>
+                  <th className="py-3 px-6 text-left">Coste</th>
+                  <th className="py-3 px-6 text-left">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="text-gray-700 text-sm font-light">
+                {currentReparaciones.map((reparacion) => (
+                  <tr
+                    key={reparacion.id}
+                    className="border-b border-gray-200 hover:bg-gray-100"
+                  >
+                    <td className="py-3 px-6 text-left whitespace-nowrap">
+                      {reparacion.bache_id}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      {reparacion.brigada}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      {reparacion.trabajadores}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      {reparacion.equipamiento}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      {reparacion.horas_empleadas}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded text-white ${
+                          reparacion.estado === "Obra en curso"
+                            ? "bg-yellow-500"
+                            : reparacion.estado === "Reparación temporal"
+                            ? "bg-orange-500"
+                            : reparacion.estado === "No reparado"
+                            ? "bg-red-500"
+                            : reparacion.estado === "Reparado"
+                            ? "bg-green-500"
+                            : "bg-gray-500"
+                        }`}
+                      >
+                        {reparacion.estado}
+                      </span>
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      {reparacion.material_relleno}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      {formatNumber(reparacion.coste)}
+                    </td>
+                    <td className="py-3 px-6 text-left">
+                      <button
+                        onClick={() => handleUpdate(reparacion)}
+                        className="bg-blue-500 text-white py-1 px-2 rounded mr-2 text-xs"
+                      >
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(reparacion)}
+                        className="bg-red-500 text-white py-1 px-2 rounded text-xs"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-6 flex justify-center">
+            {Array.from(
+              { length: Math.ceil(reparaciones.length / itemsPerPage) },
+              (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => paginate(i + 1)}
+                  className={`mx-1 px-3 py-1 rounded ${
+                    currentPage === i + 1
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-200 text-gray-700"
                   }`}
                 >
-                  {reparacion.estado}
-                </span>
-              </p>
-              <p>
-                <strong>Material Relleno:</strong> {reparacion.material_relleno}
-              </p>
-              <p>
-                <strong>Coste:</strong> {formatNumber(reparacion.coste)}
-              </p>
-              <div className="mt-4 flex justify-end space-x-2">
-                <button
-                  onClick={() => handleUpdate(reparacion)}
-                  className="bg-blue-500 text-white py-1 px-4 rounded-lg shadow-sm hover:bg-blue-600 transition duration-200"
-                >
-                  Editar
+                  {i + 1}
                 </button>
-                <button
-                  onClick={() => handleDelete(reparacion)}
-                  className="bg-red-500 text-white py-1 px-4 rounded-lg shadow-sm hover:bg-red-600 transition duration-200"
-                >
-                  Eliminar
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+              )
+            )}
+          </div>
+        </>
       )}
 
       {/* Update Modal */}

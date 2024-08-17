@@ -12,6 +12,8 @@ const BacheList = () => {
     posición: '',
     prioridad: ''
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [bachesPerPage] = useState(10);
 
   useEffect(() => {
     const fetchBaches = async () => {
@@ -57,7 +59,7 @@ const BacheList = () => {
 
   const updateBache = async () => {
     try {
-      console.log('Datos del formulario:', formData); // Añadido para depuración
+      console.log('Datos del formulario:', formData);
       
       const { error } = await supabase
         .from('baches')
@@ -121,6 +123,14 @@ const BacheList = () => {
     }
   };
 
+  // Get current baches
+  const indexOfLastBache = currentPage * bachesPerPage;
+  const indexOfFirstBache = indexOfLastBache - bachesPerPage;
+  const currentBaches = baches.slice(indexOfFirstBache, indexOfLastBache);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   return (
     <div className="p-6 bg-white rounded-lg shadow-md font-poppins">
       <h2 className="text-3xl font-semibold mb-6 text-gray-800">Lista de Baches</h2>
@@ -128,16 +138,17 @@ const BacheList = () => {
         <table className="min-w-full bg-white border border-gray-200">
           <thead>
             <tr className="bg-blue-500 text-white uppercase text-sm leading-normal">
-              <th className="py-3 px-6 text-left">ID</th>
+              <th className="py-3 px-6 text-left">Número Referencia</th>
               <th className="py-3 px-6 text-left">Calle</th>
               <th className="py-3 px-6 text-left">Tamaño</th>
               <th className="py-3 px-6 text-left">Posición</th>
               <th className="py-3 px-6 text-left">Distrito</th>
               <th className="py-3 px-6 text-left">Prioridad</th>
+              
             </tr>
           </thead>
           <tbody className="text-gray-700 text-sm font-light">
-            {baches.map((bache) => (
+            {currentBaches.map((bache) => (
               <tr key={bache.id} className="border-b border-gray-200 hover:bg-gray-100">
                 <td className="py-3 px-6 text-left whitespace-nowrap">{bache.id}</td>
                 <td className="py-3 px-6 text-left">{bache.calle}</td>
@@ -147,10 +158,8 @@ const BacheList = () => {
                 <td className="py-3 px-6 text-left">
                   <span
                     className={`text-xs font-semibold inline-block py-1 px-2 rounded text-white ${
-                      bache.prioridad === 1
+                        bache.prioridad <= 4
                         ? 'bg-red-500'
-                        : bache.prioridad <= 4
-                        ? 'bg-orange-500'
                         : bache.prioridad <= 7
                         ? 'bg-yellow-500'
                         : 'bg-green-500'
@@ -163,6 +172,21 @@ const BacheList = () => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center mt-4">
+        {Array.from({ length: Math.ceil(baches.length / bachesPerPage) }, (_, i) => (
+          <button
+            key={i}
+            onClick={() => paginate(i + 1)}
+            className={`mx-1 px-3 py-1 rounded ${
+              currentPage === i + 1 ? 'bg-blue-500 text-white' : 'bg-gray-200'
+            }`}
+          >
+            {i + 1}
+          </button>
+        ))}
       </div>
 
       {/* Update Modal */}
